@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guided FASTA Filtering — Metaproteomics</title>
+<meta name="description" content="Build a tailored metaproteomics FASTA from KEGG Orthology (KO) terms — entirely in your browser.">
+<meta name="theme-color" content="#1b4f7e">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header>
+  <p class="kicker">Metaproteomics &middot; search-space tailoring</p>
+  <h1>Guided FASTA Filtering — Metaproteomics</h1>
+  <p class="sub">
+    Build a tailored protein FASTA for a metagenome sample from biological
+    context — KEGG Orthology (KO) terms. You supply the sample's KO annotation
+    table and its predicted-protein FASTA; the KO&nbsp;&rarr;&nbsp;gene join and
+    FASTA filtering run in your browser and nothing is uploaded. Every run
+    produces a reproducibility manifest.
+  </p>
+</header>
+
+<main>
+
+  <!-- Step 1: KO annotation file -->
+  <section id="step-ko">
+    <h2>Load the sample's KO annotation</h2>
+    <label class="filelabel">
+      KO annotation table <span class="req">(required, *.ko.txt)</span>
+      <input type="file" id="ko-file" accept=".txt,.tsv,.ko">
+    </label>
+    <p id="ko-status" class="status">Tab-separated IMG/JGI KO table: gene id, flag, <code>KO:Kxxxxx</code>, …</p>
+  </section>
+
+  <!-- Step 2: pick KO terms -->
+  <section id="step-search">
+    <h2>Find and pick KO terms</h2>
+    <div class="searchbar">
+      <div class="typeahead">
+        <input type="text" id="query" autocomplete="off" spellcheck="false"
+               placeholder="load a KO file first…" disabled>
+        <ul id="suggestions" class="suggestions hidden"></ul>
+      </div>
+    </div>
+    <p id="search-status" class="status"></p>
+    <div id="picked" class="picked"></div>
+  </section>
+
+  <!-- Step 3: parameters -->
+  <section id="step-params">
+    <h2>Parameters</h2>
+    <div class="paramgroup">
+      <label>Min proteins (pad if below)
+        <input type="number" id="min-proteins" min="0" step="10" value="0">
+      </label>
+      <label>Max proteins (0 = no cap)
+        <input type="number" id="max-proteins" min="0" step="10" value="0">
+      </label>
+      <label>Padding strategy
+        <select id="padding-strategy">
+          <option value="none" selected>none</option>
+          <option value="random">random</option>
+        </select>
+      </label>
+      <label>Padding seed
+        <input type="number" id="padding-seed" min="0" step="1" value="42">
+      </label>
+    </div>
+    <p class="status">
+      Padding draws additional genes at random from the loaded FASTA to reach the
+      minimum — useful as a decoy / null background. The seed makes it reproducible.
+    </p>
+  </section>
+
+  <!-- Step 4: metrics -->
+  <section id="step-metrics">
+    <h2>Selection</h2>
+    <div class="metrics">
+      <div class="metric"><span id="m-terms">0</span><label>KO terms picked</label></div>
+      <div class="metric"><span id="m-genes">0</span><label>unique genes</label></div>
+      <div class="metric"><span id="m-pad">0</span><label>will pad</label></div>
+      <div class="metric"><span id="m-final">0</span><label>final set size</label></div>
+    </div>
+    <p id="metrics-note" class="status"></p>
+  </section>
+
+  <!-- Step 5: FASTA -->
+  <section id="step-files">
+    <h2>Load the sample's proteome FASTA</h2>
+    <label class="filelabel">
+      Predicted-protein FASTA <span class="req">(required, *.faa)</span>
+      <input type="file" id="fasta-file" accept=".faa,.fasta,.fa,.txt">
+    </label>
+    <p id="fasta-status" class="status"></p>
+  </section>
+
+  <!-- Step 6: generate -->
+  <section id="step-generate">
+    <h2>Generate bundle</h2>
+    <button id="generate-btn" type="button" disabled>Generate tailored FASTA</button>
+    <p id="generate-status" class="status"></p>
+    <div id="downloads" class="downloads"></div>
+    <details id="manifest-preview" class="hidden">
+      <summary>Manifest preview</summary>
+      <pre id="manifest-json"></pre>
+    </details>
+  </section>
+
+</main>
+
+<footer>
+  <p class="foot-strong">Static, client-side tool — no server, and your files never leave your browser.</p>
+  <p>
+    KO term names from a bundled KEGG Orthology catalog &middot;
+    MacCoss Lab, University of Washington.
+  </p>
+</footer>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

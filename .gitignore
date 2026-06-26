@@ -1,0 +1,19 @@
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# Python (catalog build script)
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Sample data — never version-controlled (keep it in ../References, not the repo).
+# The bundled docs/data/ko_catalog.json is JSON and is intentionally NOT ignored.
+*.ko.txt
+*.faa
+*.fasta
+*.fa
+*.tsv
+*.parquet

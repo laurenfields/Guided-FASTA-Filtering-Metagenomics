@@ -1,0 +1,191 @@
+/* Guided FASTA Filtering — clean, professional styling. */
+
+:root {
+  --ink: #1d2935;
+  --muted: #5c6b7a;
+  --line: #dce2e9;
+  --accent: #1b4f7e;
+  --accent-dark: #143b5e;
+  --bg-soft: #f3f5f8;
+  --ok: #1a7a3c;
+  --warn: #9a6b00;
+  --err: #b22222;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  color: var(--ink);
+  line-height: 1.55;
+  margin: 0;
+  background: #fff;
+  border-top: 4px solid var(--accent);
+}
+
+header, main, footer { max-width: 840px; margin: 0 auto; padding: 0 24px; }
+header { padding-top: 34px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
+
+.kicker {
+  margin: 0 0 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+h1 { margin: 0 0 8px; font-size: 1.85rem; letter-spacing: -0.01em; }
+.sub { color: var(--muted); margin: 0; font-size: 0.94rem; max-width: 62ch; }
+
+main { counter-reset: step; }
+
+h2 {
+  display: flex; align-items: center; gap: 11px;
+  font-size: 1.08rem; margin: 0 0 14px;
+}
+h2::before {
+  counter-increment: step;
+  content: counter(step);
+  flex: none;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 1.7em; height: 1.7em;
+  background: var(--accent); color: #fff;
+  border-radius: 50%;
+  font-size: 0.82rem; font-weight: 700;
+}
+
+section {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 18px 20px;
+  margin: 16px 0;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(29, 41, 53, 0.04);
+}
+
+label { display: block; margin: 8px 0; font-size: 0.92rem; }
+label.radio, label.check { display: inline-flex; align-items: center; gap: 6px; margin-right: 18px; }
+
+input[type="text"], input[type="number"], select {
+  font: inherit;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+input[type="number"] { width: 8rem; }
+input[type="range"] { width: 100%; margin-top: 4px; }
+
+button {
+  font: inherit;
+  background: var(--accent);
+  color: #fff;
+  border: 0;
+  border-radius: 4px;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+button:hover { background: var(--accent-dark); }
+button:disabled { background: #b8c4d0; cursor: not-allowed; }
+
+.searchbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-start; }
+.typeahead { position: relative; flex: 1; min-width: 220px; }
+.typeahead input[type="text"] { width: 100%; }
+
+.status { font-size: 0.86rem; color: var(--muted); margin: 8px 0 0; min-height: 1.1em; }
+.status.ok { color: var(--ok); }
+.status.warn { color: var(--warn); }
+.status.err { color: var(--err); }
+
+/* typeahead dropdown */
+.suggestions {
+  position: absolute; left: 0; right: 0; top: 100%;
+  margin: 2px 0 0; padding: 0; list-style: none;
+  background: #fff; border: 1px solid var(--line); border-radius: 4px;
+  max-height: 280px; overflow-y: auto; z-index: 20;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+.suggestions li {
+  padding: 7px 10px; cursor: pointer; font-size: 0.9rem;
+  border-bottom: 1px solid var(--bg-soft);
+}
+.suggestions li:last-child { border-bottom: 0; }
+.suggestions li:hover, .suggestions li.active { background: var(--bg-soft); }
+.suggestions li .meta { color: var(--muted); font-size: 0.8rem; }
+.suggestions li.empty { color: var(--muted); cursor: default; }
+
+/* picked-term chips */
+.picked { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--bg-soft); border: 1px solid var(--line); border-radius: 16px;
+  padding: 5px 6px 5px 12px; font-size: 0.88rem;
+}
+.chip .chip-meta { color: var(--muted); font-size: 0.78rem; }
+.chip button {
+  background: none; color: var(--muted); border: 0; cursor: pointer;
+  font-size: 1.1rem; line-height: 1; padding: 0 6px; border-radius: 50%;
+}
+.chip button:hover { background: var(--line); color: var(--ink); }
+
+.paramgroup {
+  display: flex; gap: 18px; flex-wrap: wrap;
+  padding: 8px 0; border-top: 1px solid var(--bg-soft);
+}
+.paramgroup:first-child { border-top: 0; }
+.paramgroup label { margin: 4px 0; }
+#disease-params label, #go-params .check { width: 100%; }
+
+.evidence { display: flex; gap: 12px; flex-wrap: wrap; width: 100%; }
+.evidence label { margin: 2px 0; }
+
+.metrics { display: flex; gap: 10px; flex-wrap: wrap; }
+.metric {
+  flex: 1; min-width: 110px; text-align: center;
+  background: var(--bg-soft); border-radius: 6px; padding: 12px 8px;
+}
+.metric span { display: block; font-size: 1.5rem; font-weight: 700; }
+.metric label { margin: 0; color: var(--muted); font-size: 0.78rem; }
+
+.filelabel { font-weight: 600; }
+.filelabel input { display: block; margin-top: 4px; font-weight: 400; }
+.req { color: var(--err); font-weight: 400; font-size: 0.82rem; }
+.opt { color: var(--muted); font-weight: 400; font-size: 0.82rem; }
+
+.downloads { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.downloads a {
+  display: inline-block; background: var(--accent); color: #fff;
+  text-decoration: none; padding: 8px 14px; border-radius: 4px; font-size: 0.9rem;
+}
+.downloads a:hover { background: var(--accent-dark); }
+
+pre {
+  background: var(--bg-soft); padding: 12px; border-radius: 4px;
+  overflow-x: auto; font-size: 0.8rem;
+}
+
+footer {
+  color: var(--muted); font-size: 0.8rem;
+  padding: 22px 24px 48px; margin-top: 8px;
+  border-top: 1px solid var(--line);
+}
+footer p { margin: 4px 0; }
+footer .foot-strong { color: var(--ink); font-weight: 600; }
+
+.hidden { display: none !important; }
+
+/* Mobile (incl. people scanning the slide QR on a phone) */
+@media (max-width: 600px) {
+  header, main, footer { padding-left: 16px; padding-right: 16px; }
+  header { padding-top: 24px; }
+  h1 { font-size: 1.5rem; }
+  .sub { font-size: 0.9rem; }
+  section { padding: 15px 16px; }
+  h2 { font-size: 1.02rem; }
+  .metric { min-width: calc(50% - 5px); }   /* 2 x 2 grid */
+  input[type="number"] { width: 100%; }
+  .paramgroup { gap: 12px; }
+  .paramgroup label { width: 100%; }
+  button, .downloads a { padding: 11px 16px; }  /* larger touch targets */
+  label.radio, label.check { display: flex; margin: 8px 0; }
+}
