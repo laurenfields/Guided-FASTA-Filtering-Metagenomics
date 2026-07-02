@@ -63,3 +63,17 @@ test('null koSummary degrades gracefully', () => {
   assert.equal(m.ko_annotation_summary, null);
   assert.equal(m.proteome_fasta_prefix, null);
 });
+
+test('library block is null by default and populated when provided', () => {
+  assert.equal(sample().library, null);   // no library arg -> null
+  const m = buildManifest({
+    terms: [{ id: 'K01945', name: 'purD', genes: 2 }],
+    params: {}, sizeInputs: {},
+    counts: { seed: 2, padded: 0, final: 2, matchedInFasta: 2, missingFromFasta: 0 },
+    koFileName: 'x.ko.txt', koSummary: null, fastaFileName: 'x.faa', fastaPrefix: 'Ga',
+    library: { fileName: 'lib.tsv', proteinColumn: 'Protein.Ids', keptRows: 500, totalRows: 9000, proteinGroups: 7 },
+  });
+  assert.equal(m.library.rows_kept, 500);
+  assert.equal(m.library.protein_column, 'Protein.Ids');
+  assert.equal(m.library.cogrouping_vs_genes, 7 - 2);   // proteinGroups - final
+});

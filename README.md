@@ -20,7 +20,8 @@ so the whole pipeline is a local join with no API required.
 ```
 KO term(s)  →  gene ids carrying them (from this sample's .ko.txt)
             →  subset this sample's predicted-protein .faa
-            →  download: tailored FASTA + gene→KO map + reproducibility manifest
+               (and, optionally, its DIA-NN spectral library .tsv)
+            →  download: tailored FASTA + gene→KO map + filtered library + manifest
 ```
 
 1. **Load the sample's KO annotation** — the IMG/JGI `*.a.ko.txt` table
@@ -31,11 +32,18 @@ KO term(s)  →  gene ids carrying them (from this sample's .ko.txt)
 3. **Set parameters** — optional min/max gene count and seeded random padding
    (draws extra genes from the FASTA to reach a minimum — useful as a null /
    decoy background).
-4. **Load the sample's proteome FASTA** — the matching `*.a.faa`
-   (Prodigal-predicted proteins). The app warns if its gene-id prefix doesn't
-   match the KO file, i.e. they're from different assemblies.
-5. **Generate** — download the tailored `.faa`, a `gene→KO` `.tsv`, and a
-   `manifest.json` recording every choice.
+4. **Load the sample's files** — the matching `*.a.faa` (Prodigal-predicted
+   proteins; required) and, optionally, a DIA-NN spectral library `.tsv` for
+   the same sample. The app warns if the FASTA gene-id prefix doesn't match the
+   KO file, i.e. they're from different assemblies.
+5. **Generate** — download the tailored `.faa`, a `gene→KO` `.tsv`, the filtered
+   DIA-NN library `.tsv` (if you supplied one), and a `manifest.json` recording
+   every choice.
+
+The DIA-NN library is filtered to rows whose protein column (`Protein.Ids`,
+falling back to `Protein.Group`) contains a selected gene id. It is **streamed**
+line by line, so multi-GB libraries never load fully into memory and never leave
+your browser.
 
 The KO annotation table and the FASTA **must come from the same sample/assembly**
 (same `Ga…` gene-id prefix), because filtering is an exact gene-id join.
@@ -99,6 +107,7 @@ docs/                          # the deployable static site (GitHub Pages root)
     ko.js                      # parse .ko.txt → gene<->KO maps + sample prefix
     kocatalog.js               # load the bundled KO catalog
     fasta.js                   # FASTA parsing + filtering (in-browser)
+    library.js                 # streamed DIA-NN library .tsv filtering
     padding.js                 # seeded random padding
     manifest.js                # reproducibility manifest
 scripts/

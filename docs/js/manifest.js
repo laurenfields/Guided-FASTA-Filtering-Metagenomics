@@ -14,10 +14,11 @@ export const TOOL_VERSION = 'guided-fasta-filtering-metaproteomics/1.0';
  *   koSummary     - {geneCount, koCount, rowCount, prefix} of that file
  *   fastaFileName - name of the proteome FASTA the user supplied
  *   fastaPrefix   - dominant gene-id prefix of that FASTA
+ *   library       - null or {fileName, proteinColumn, keptRows, totalRows, proteinGroups}
  */
 export function buildManifest({
   terms, params, sizeInputs, counts,
-  koFileName, koSummary, fastaFileName, fastaPrefix,
+  koFileName, koSummary, fastaFileName, fastaPrefix, library,
 }) {
   return {
     tool: TOOL_VERSION,
@@ -49,10 +50,20 @@ export function buildManifest({
     },
     proteome_fasta: fastaFileName,
     proteome_fasta_prefix: fastaPrefix || null,
+    library: library
+      ? {
+          file_name: library.fileName,
+          protein_column: library.proteinColumn,
+          rows_kept: library.keptRows,
+          rows_total: library.totalRows,
+          protein_groups: library.proteinGroups,
+          cogrouping_vs_genes: library.proteinGroups - counts.final,
+        }
+      : null,
     notes: [
       'KO term -> gene resolution is a local join against the uploaded KO annotation table.',
       'KO term names come from a bundled KEGG Orthology catalog.',
-      'FASTA filtering ran entirely in the browser; input files were not uploaded.',
+      'FASTA and library filtering ran entirely in the browser; input files were not uploaded.',
     ],
   };
 }

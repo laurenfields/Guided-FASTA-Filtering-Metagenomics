@@ -87,14 +87,19 @@
     <p id="metrics-note" class="status"></p>
   </section>
 
-  <!-- Step 5: FASTA -->
+  <!-- Step 5: files -->
   <section id="step-files">
-    <h2>Load the sample's proteome FASTA</h2>
+    <h2>Load the sample's files</h2>
     <label class="filelabel">
       Predicted-protein FASTA <span class="req">(required, *.faa)</span>
       <input type="file" id="fasta-file" accept=".faa,.fasta,.fa,.txt">
     </label>
     <p id="fasta-status" class="status"></p>
+    <label class="filelabel">
+      DIA-NN spectral library <span class="opt">(optional, *.tsv)</span>
+      <input type="file" id="library-file" accept=".tsv,.txt,.csv">
+    </label>
+    <p id="library-status" class="status">Filtered to rows whose protein column contains a selected gene — streamed, handles multi-GB files.</p>
   </section>
 
   <!-- Step 6: generate -->

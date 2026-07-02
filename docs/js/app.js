@@ -9,6 +9,7 @@
 import { parseKoAnnotation, genesForKos, genePrefix } from './ko.js';
 import { loadCatalog } from './kocatalog.js';
 import { indexFasta, emitFasta } from './fasta.js';
+import { filterLibraryTsv } from './library.js';
 import { randomPad } from './padding.js';
 import { buildManifest } from './manifest.js';
 
@@ -30,6 +31,7 @@ const state = {
   fastaPool: [],              // all gene ids present in the FASTA
   fastaPrefix: null,
   fastaFileName: null,
+  libraryFile: null,          // optional DIA-NN library File (streamed at generate time)
 };
 
 /* ------------------------------------------------------------------ utils */
@@ -293,6 +295,16 @@ async function onFastaLoad(ev) {
   updateGenerateGate();
 }
 
+/* The DIA-NN library is optional and can be multi-GB, so it is not read here —
+ * just held and streamed at generate time. */
+function onLibraryLoad(ev) {
+  const file = ev.target.files[0];
+  state.libraryFile = file || null;
+  setStatus('library-status',
+    file ? `${file.name} (${(file.size / 1e6).toFixed(1)} MB) ready — filtered when you generate.` : '',
+    file ? 'ok' : '');
+}
+
 /* Warn (don't block) when the KO file and FASTA appear to be from different
  * samples — their gene-id prefixes won't join. */
 function maybeWarnPrefixMismatch() {
@@ -313,7 +325,7 @@ function updateGenerateGate() {
   );
 }
 
-function doGenerate() {
+async function doGenerate() {
   $('generate-btn').disabled = true;
   setStatus('generate-status', 'Filtering FASTA…');
   $('downloads').innerHTML = '';
@@ -330,6 +342,28 @@ function doGenerate() {
       mapLines.push(`${g}\t${kos.join(';')}`);
     }
     const mapTsv = mapLines.join('\n') + '\n';
+
+    // Optional: stream + filter a DIA-NN spectral library to the selected genes.
+    let libraryInfo = null;
+    let libraryTsv = null;
+    if (state.libraryFile) {
+      setStatus('generate-status', 'Streaming + filtering library .tsv…');
+      const res = await filterLibraryTsv(
+        state.libraryFile, state.finalGenes,
+        (read, total) => {
+          const pct = total ? ((read / total) * 100).toFixed(0) : '?';
+          setStatus('generate-status', `Filtering library… ${pct}%`);
+        }
+      );
+      libraryTsv = res.tsv;
+      libraryInfo = {
+        fileName: state.libraryFile.name,
+        proteinColumn: res.proteinColumn,
+        keptRows: res.keptRows,
+        totalRows: res.totalRows,
+        proteinGroups: res.proteinGroups,
+      };
+    }
 
     const manifest = buildManifest({
       terms: state.picked,
@@ -354,16 +388,23 @@ function doGenerate() {
       koSummary: state.sample,
       fastaFileName: state.fastaFileName,
       fastaPrefix: state.fastaPrefix,
+      library: libraryInfo,
     });
 
-    renderDownloads(fastaText, mapTsv, manifest);
+    renderDownloads(fastaText, mapTsv, libraryTsv, manifest);
     $('manifest-json').textContent = JSON.stringify(manifest, null, 2);
     $('manifest-preview').classList.remove('hidden');
 
     const warn = missing.size
       ? ` (${missing.size} selected gene(s) not found in your FASTA — sample mismatch?)` : '';
+    let libNote = '';
+    if (libraryInfo) {
+      libNote = ` Library: ${libraryInfo.keptRows.toLocaleString()}/`
+        + `${libraryInfo.totalRows.toLocaleString()} rows kept, `
+        + `${libraryInfo.proteinGroups.toLocaleString()} protein group(s).`;
+    }
     setStatus('generate-status',
-      `Done: ${matched.size.toLocaleString()} proteins in tailored FASTA${warn}.`, 'ok');
+      `Done: ${matched.size.toLocaleString()} proteins in tailored FASTA${warn}.${libNote}`, 'ok');
   } catch (e) {
     setStatus('generate-status', e.message, 'err');
   } finally {
@@ -371,7 +412,7 @@ function doGenerate() {
   }
 }
 
-function renderDownloads(fastaText, mapTsv, manifest) {
+function renderDownloads(fastaText, mapTsv, libraryTsv, manifest) {
   const box = $('downloads');
   box.innerHTML = '';
   const stamp = new Date().toISOString().slice(0, 10);
@@ -385,6 +426,9 @@ function renderDownloads(fastaText, mapTsv, manifest) {
   };
   add('Download FASTA', fastaText, `tailored_${stamp}.faa`, 'text/plain');
   add('Download gene→KO map .tsv', mapTsv, `tailored_gene_ko_${stamp}.tsv`, 'text/tab-separated-values');
+  if (libraryTsv) {
+    add('Download library .tsv', libraryTsv, `tailored_library_${stamp}.tsv`, 'text/tab-separated-values');
+  }
   add('Download manifest .json', JSON.stringify(manifest, null, 2),
     `manifest_${stamp}.json`, 'application/json');
 }
@@ -399,6 +443,7 @@ async function init() {
   $('query').addEventListener('keydown', onQueryKeydown);
   $('query').addEventListener('blur', () => setTimeout(closeSuggestions, 150));
   $('fasta-file').addEventListener('change', onFastaLoad);
+  $('library-file').addEventListener('change', onLibraryLoad);
   $('generate-btn').addEventListener('click', doGenerate);
 
   ['min-proteins', 'max-proteins', 'padding-strategy', 'padding-seed'].forEach((id) =>
