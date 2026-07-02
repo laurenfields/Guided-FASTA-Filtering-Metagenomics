@@ -1,0 +1,10 @@
+{
+  "name": "guided-fasta-filtering-metaproteomics",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Static client-side web app: tailor a metagenome sample's protein FASTA by KEGG Orthology (KO) terms.",
+  "scripts": {
+    "test": "node --test tests/js/"
+  }
+}
